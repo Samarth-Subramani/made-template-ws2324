@@ -2,7 +2,6 @@
 
 ## Title
 Predicting Stock Market Trends
-Awesome MADE project.
 
 ## Main Question
 
