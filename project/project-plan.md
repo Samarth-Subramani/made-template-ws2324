@@ -16,12 +16,14 @@ The goal of this data science project is to develop a predictive model that can 
 ### Datasource1: Yahoo Finance API
 * Metadata URL: https://finance.yahoo.com/
 * Data Type: CSV
+ 
 The Yahoo Finance API provides real-time and historical financial data for a wide range of stocks. It includes information such as stock prices, trading volumes, and various financial indicators. The API allows for dynamic access to the latest market data.
 
 ### Datasource2: Huge stock market dataset
 * Metadata URL: https://www.kaggle.com/datasets/borismarjanovic/price-volume-data-for-all-us-stocks-etfs
 * Data URL: https://www.kaggle.com/datasets/borismarjanovic/price-volume-data-for-all-us-stocks-etfs/download?datasetVersionNumber=3
 * Data Type: CSV
+  
 Historical stock prices dataset comprises past stock market data, including daily or minute-by-minute stock prices, trading volumes, and other relevant information. This dataset is crucial for training machine learning models to identify patterns and trends.
 
 ## Work Packages
