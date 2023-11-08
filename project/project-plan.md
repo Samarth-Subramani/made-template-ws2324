@@ -1,37 +1,37 @@
 # Project Plan
 
 ## Title
-Predicting Stock Market Trends
+Climate Change Impact on Agriculture 
 
 ## Main Question
 
-The primary objective of the project is to build a predictive model capable of forecasting stock price movements.
+Explore the correlation between temperature variations (from NASA GISS) and agricultural productivity (FAO data). Build a model to predict the impact of temperature changes on crop yields.
 
 ## Description
 
-The goal of this data science project is to develop a predictive model that can forecast stock price movements. By leveraging historical stock prices, financial indicators, and market sentiment, the model aims to assist investors in making informed decisions. This project falls within the domain of financial analytics and machine learning, offering insights into the complex and dynamic nature of stock markets.
+Agriculture is one of the most crucial sectors of the global economy, providing food and sustenance for billions of people worldwide. However, climate change poses a significant threat to agricultural productivity, with rising temperatures and extreme weather events disrupting crop yields and jeopardizing food security. This project aims to investigate the impact of temperature changes on agricultural productivity by analyzing data from NASA GISS Surface Temperature Analysis and the FAO - Food and Agriculture Organization of the United Nations.
 
 ## Datasources
 
-### Datasource1: Yahoo Finance API
-* Metadata URL: https://finance.yahoo.com/
+### Datasource1: NASA GISS Surface Temperature Analysis dataset
+* Metadata URL: https://data.giss.nasa.gov/gistemp/
+* Data URL: https://data.giss.nasa.gov/gistemp/graphs_v4/graph_data/GISTEMP_Seasonal_Cycle_since_1880/graph.csv
 * Data Type: CSV
  
-The Yahoo Finance API provides real-time and historical financial data for a wide range of stocks. It includes information such as stock prices, trading volumes, and various financial indicators. The API allows for dynamic access to the latest market data.
+This dataset provides global gridded temperature data since 1880. It includes monthly, annual, and decadal temperature anomalies, allowing for the assessment of long-term temperature trends and variations.
 
-### Datasource2: Huge stock market dataset
-* Metadata URL: https://www.kaggle.com/datasets/borismarjanovic/price-volume-data-for-all-us-stocks-etfs
-* Data URL: https://www.kaggle.com/datasets/borismarjanovic/price-volume-data-for-all-us-stocks-etfs/download?datasetVersionNumber=3
+### Datasource2: FAO - Food and Agriculture Organization of the United Nations
+* Metadata URL: https://www.fao.org/faostat/en/#data
+* Data URL: https://www.fao.org/faostat/en/#data/QCL
 * Data Type: CSV
   
-Historical stock prices dataset comprises past stock market data, including daily or minute-by-minute stock prices, trading volumes, and other relevant information. This dataset is crucial for training machine learning models to identify patterns and trends.
+The FAO provides extensive data on agricultural production, including crop yields, trade statistics, and food security indicators. This dataset will be used to extract information on crop yields and relate them to temperature variations.
 
 ## Work Packages
 
-1. Data collection and processing
-2. Feature Engineering
-3. Model Development
-4. Model Evaluation and Validation
-5. Integration of Real-time data
-6. Visualization and Interpretation
-7. Deployment 
+1. Data preprocessing
+2. Data Exploration and Visualization
+3. Correlation Analysis
+4. Model Evaluation
+5. Report and Documentation 
+   
