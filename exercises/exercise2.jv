@@ -4,7 +4,90 @@ pipeline TrainStopPipeline {
         -> CsvTextFileInterpreter
         -> CsvFileInterpreter
         -> StatusColumnDeleter
+        -> TrainStopTableInterpreterpipeline TrainStopPipeline {
+    // Extract data from the CSV file via HTTP
+    CsvHttpExtractor
+        -> CsvTextFileInterpreter
+        -> CsvFileInterpreter
+        -> StatusColumnDeleter
         -> TrainStopTableInterpreter
+        -> TrainStopLoader;
+
+    // HTTP extractor block to fetch the CSV file
+    block CsvHttpExtractor oftype HttpExtractor {
+        url: "https://download-data.deutschebahn.com/static/datasets/haltestellen/D_Bahnhof_2020_alle.CSV";
+    }
+
+    // Text file interpreter to handle the output from HTTP
+    block CsvTextFileInterpreter oftype TextFileInterpreter { }
+
+    // CSV interpreter to parse the CSV content
+    block CsvFileInterpreter oftype CSVInterpreter {
+        delimiter: ";";
+    }
+    
+    block StatusColumnDeleter oftype ColumnDeleter {
+        delete: [column J];
+    }
+
+    // Table interpreter to define the structure of the database table
+    block TrainStopTableInterpreter oftype TableInterpreter {
+        header: true;
+        columns: [
+            "EVA_NR" oftype integer,       
+            "DS100" oftype TextType,
+            "IFOPT" oftype TextType,
+            "NAME" oftype TextType,
+            "Verkehr" oftype TextType,
+            "Laenge" oftype CordinateType,
+            "Breite" oftype CordinateType,
+            "Betreiber_Name" oftype TextType,
+            "Betreiber_Nr" oftype integer,   
+        ];
+    }
+
+    // SQLite loader block to load data into the SQLite database
+    block TrainStopLoader oftype SQLiteLoader {
+        table: "trainstops";
+        file: "./trainstops.sqlite";
+    }
+    
+    valuetype VerkehrType oftype text {
+        constraints: [ValidVerkehrValues];
+    }
+
+    valuetype CordinateType oftype decimal {
+        constraints: [ValidGeographicCordinates];
+    }
+
+    valuetype IfOptType oftype text {
+        constraints: [ValidIfOptValues];
+    }
+
+    valuetype TextType oftype text {
+        constraints: [ NonEmptyValues ];
+    }
+
+    constraint ValidVerkehrValues oftype AllowlistConstraint {
+        allowlist: ["FV", "RV", "nur DPN"];
+    }
+
+    constraint ValidGeographicCordinates oftype RangeConstraint {
+        lowerBound: -90;
+        upperBound: 90;
+    }
+
+    constraint ValidIfOptValues oftype RegexConstraint {
+        regex: /^[a-zA-Z]{2}:\d+:\d+(?::\d+)?$/;
+    }
+
+    constraint NonEmptyValues oftype LengthConstraint {
+        minLength: 1;
+        maxLength: 9007199254740991;
+    }
+}
+
+
         -> TrainStopLoader;
 
     // HTTP extractor block to fetch the CSV file
