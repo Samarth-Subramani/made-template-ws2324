@@ -1,5 +1,5 @@
 pipeline TrainStopPipeline {
-    // Extract data from the CSV file via HTTP
+    // Extract, interpret, and load data
     CsvHttpExtractor
         -> CsvTextFileInterpreter
         -> CsvFileInterpreter
@@ -12,19 +12,20 @@ pipeline TrainStopPipeline {
         url: "https://download-data.deutschebahn.com/static/datasets/haltestellen/D_Bahnhof_2020_alle.CSV";
     }
 
-    // Text file interpreter to handle the output from HTTP
+    // Text file interpreter for HTTP response
     block CsvTextFileInterpreter oftype TextFileInterpreter { }
 
-    // CSV interpreter to parse the CSV content
+    // CSV interpreter to parse CSV content
     block CsvFileInterpreter oftype CSVInterpreter {
         delimiter: ";";
     }
     
+    // Delete the "Status" column
     block StatusColumnDeleter oftype ColumnDeleter {
         delete: [column J];
     }
 
-    // Table interpreter to define the structure of the database table
+    // Interpret CSV data and define table structure
     block TrainStopTableInterpreter oftype TableInterpreter {
         header: true;
         columns: [
@@ -40,12 +41,13 @@ pipeline TrainStopPipeline {
         ];
     }
 
-    // SQLite loader block to load data into the SQLite database
+    // Load interpreted data into SQLite database
     block TrainStopLoader oftype SQLiteLoader {
         table: "trainstops";
         file: "./trainstops.sqlite";
     }
     
+    // Data type validations
     valuetype VerkehrType oftype text {
         constraints: [ValidVerkehrValues];
     }
@@ -59,9 +61,10 @@ pipeline TrainStopPipeline {
     }
 
     valuetype TextType oftype text {
-        constraints: [ NonEmptyValues ];
+        constraints: [NonEmptyValues];
     }
 
+    // Constraints
     constraint ValidVerkehrValues oftype AllowlistConstraint {
         allowlist: ["FV", "RV", "nur DPN"];
     }
@@ -80,4 +83,3 @@ pipeline TrainStopPipeline {
         maxLength: 9007199254740991;
     }
 }
-
