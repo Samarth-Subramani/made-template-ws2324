@@ -29,15 +29,15 @@ pipeline TrainStopPipeline {
     block TrainStopTableInterpreter oftype TableInterpreter {
         header: true;
         columns: [
-            "EVA_NR" oftype text,       // Updated to text type for better compatibility
-            "DS100" oftype text,
-            "IFOPT" oftype text,
-            "NAME" oftype text,
-            "Verkehr" oftype text,
-            "Laenge" oftype decimal,
-            "Breite" oftype decimal,
-            "Betreiber_Name" oftype text,
-            "Betreiber_Nr" oftype text   // Updated to text type for better compatibility
+            "EVA_NR" oftype integer,       
+            "DS100" oftype TextType,
+            "IFOPT" oftype TextType,
+            "NAME" oftype TextType,
+            "Verkehr" oftype TextType,
+            "Laenge" oftype CordinateType,
+            "Breite" oftype CordinateType,
+            "Betreiber_Name" oftype TextType,
+            "Betreiber_Nr" oftype integer,   
         ];
     }
 
