@@ -1,5 +1,5 @@
 pipeline TrainStopPipeline {
-    // Extract, interpret, and load data
+    // Extract data from the CSV file via HTTP
     CsvHttpExtractor
         -> CsvTextFileInterpreter
         -> CsvFileInterpreter
@@ -12,20 +12,19 @@ pipeline TrainStopPipeline {
         url: "https://download-data.deutschebahn.com/static/datasets/haltestellen/D_Bahnhof_2020_alle.CSV";
     }
 
-    // Text file interpreter for HTTP response
+    // Text file interpreter to handle the output from HTTP
     block CsvTextFileInterpreter oftype TextFileInterpreter { }
 
-    // CSV interpreter to parse CSV content
+    // CSV interpreter to parse the CSV content
     block CsvFileInterpreter oftype CSVInterpreter {
         delimiter: ";";
     }
     
-    // Delete the "Status" column
     block StatusColumnDeleter oftype ColumnDeleter {
         delete: [column J];
     }
 
-    // Interpret CSV data and define table structure
+    // Table interpreter to define the structure of the database table
     block TrainStopTableInterpreter oftype TableInterpreter {
         header: true;
         columns: [
@@ -33,7 +32,7 @@ pipeline TrainStopPipeline {
             "DS100" oftype TextType,
             "IFOPT" oftype TextType,
             "NAME" oftype TextType,
-            "Verkehr" oftype TextType,
+            "Verkehr" oftype VerkehrType,
             "Laenge" oftype CordinateType,
             "Breite" oftype CordinateType,
             "Betreiber_Name" oftype TextType,
@@ -41,13 +40,12 @@ pipeline TrainStopPipeline {
         ];
     }
 
-    // Load interpreted data into SQLite database
+    // SQLite loader block to load data into the SQLite database
     block TrainStopLoader oftype SQLiteLoader {
         table: "trainstops";
         file: "./trainstops.sqlite";
     }
     
-    // Data type validations
     valuetype VerkehrType oftype text {
         constraints: [ValidVerkehrValues];
     }
@@ -61,10 +59,9 @@ pipeline TrainStopPipeline {
     }
 
     valuetype TextType oftype text {
-        constraints: [NonEmptyValues];
+        constraints: [ NonEmptyValues ];
     }
 
-    // Constraints
     constraint ValidVerkehrValues oftype AllowlistConstraint {
         allowlist: ["FV", "RV", "nur DPN"];
     }
@@ -76,10 +73,5 @@ pipeline TrainStopPipeline {
 
     constraint ValidIfOptValues oftype RegexConstraint {
         regex: /^[a-zA-Z]{2}:\d+:\d+(?::\d+)?$/;
-    }
-
-    constraint NonEmptyValues oftype LengthConstraint {
-        minLength: 1;
-        maxLength: 9007199254740991;
     }
 }
