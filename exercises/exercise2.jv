@@ -74,4 +74,9 @@ pipeline TrainStopPipeline {
     constraint ValidIfOptValues oftype RegexConstraint {
         regex: /^[a-zA-Z]{2}:\d+:\d+(?::\d+)?$/;
     }
+    
+    constraint NonEmptyValues oftype LengthConstraint {
+        minLength: 1;
+        maxLength: 9007199254740991;
+    }
 }
