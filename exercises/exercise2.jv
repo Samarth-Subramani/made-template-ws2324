@@ -1,0 +1,40 @@
+pipeline TrainStopPipeline {
+    // Define the pipeline flow
+    CsvHttpExtractor -> CsvTextFileInterpreter -> CsvFileInterpreter -> TrainStopTableInterpreter -> TrainStopLoader;
+
+    // HTTP extractor block to fetch the CSV file
+    block CsvHttpExtractor oftype HttpExtractor {
+        url: "https://download-data.deutschebahn.com/static/datasets/haltestellen/D_Bahnhof_2020_alle.CSV";
+    }
+
+    // Text file interpreter to convert HTTP response to text
+    block CsvTextFileInterpreter oftype TextFileInterpreter { }
+
+    // CSV interpreter to parse the CSV content
+    block CsvFileInterpreter oftype CSVInterpreter {
+        delimiter: ";";
+        enclosing: '"';
+    }
+
+    // Table interpreter to define the structure of the database table
+    block TrainStopTableInterpreter oftype TableInterpreter {
+        header: true;
+        columns: [
+            "EVA_NR" oftype text,
+            "DS100" oftype text,
+            "IFOPT" oftype text,
+            "NAME" oftype text,
+            "Verkehr" oftype text,
+            "Laenge" oftype decimal,
+            "Breite" oftype decimal,
+            "Betreiber_Name" oftype text,
+            "Betreiber_Nr" oftype text
+        ];
+    }
+
+    // SQLite loader block to load data into the SQLite database
+    block TrainStopLoader oftype SQLiteLoader {
+        table: "trainstops";
+        file: "./trainstops.sqlite";
+    }
+}
