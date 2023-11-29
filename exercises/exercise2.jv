@@ -1,13 +1,18 @@
 pipeline TrainStopPipeline {
-    // Define the pipeline flow
-    CsvHttpExtractor -> CsvTextFileInterpreter -> CsvFileInterpreter -> TrainStopTableInterpreter -> TrainStopLoader;
+    // Extract data from the CSV file via HTTP
+    CsvHttpExtractor
+        -> CsvTextFileInterpreter
+        -> CsvFileInterpreter
+        -> StatusColumnDeleter
+        -> TrainStopTableInterpreter
+        -> TrainStopLoader;
 
     // HTTP extractor block to fetch the CSV file
     block CsvHttpExtractor oftype HttpExtractor {
         url: "https://download-data.deutschebahn.com/static/datasets/haltestellen/D_Bahnhof_2020_alle.CSV";
     }
 
-    // Text file interpreter to convert HTTP response to text
+    // Text file interpreter to handle the output from HTTP
     block CsvTextFileInterpreter oftype TextFileInterpreter { }
 
     // CSV interpreter to parse the CSV content
@@ -15,12 +20,16 @@ pipeline TrainStopPipeline {
         delimiter: ";";
         enclosing: '"';
     }
+    
+    block StatusColumnDeleter oftype ColumnDeleter {
+        delete: [column J];
+    }
 
     // Table interpreter to define the structure of the database table
     block TrainStopTableInterpreter oftype TableInterpreter {
         header: true;
         columns: [
-            "EVA_NR" oftype text,
+            "EVA_NR" oftype text,       // Updated to text type for better compatibility
             "DS100" oftype text,
             "IFOPT" oftype text,
             "NAME" oftype text,
@@ -28,7 +37,7 @@ pipeline TrainStopPipeline {
             "Laenge" oftype decimal,
             "Breite" oftype decimal,
             "Betreiber_Name" oftype text,
-            "Betreiber_Nr" oftype text
+            "Betreiber_Nr" oftype text   // Updated to text type for better compatibility
         ];
     }
 
@@ -37,4 +46,30 @@ pipeline TrainStopPipeline {
         table: "trainstops";
         file: "./trainstops.sqlite";
     }
+    
+    valuetype VerkehrType oftype text {
+        constraints: [ValidVerkehrValues];
+    }
+
+    valuetype CordinateType oftype decimal {
+        constraints: [ValidGeographicCordinates];
+    }
+
+    valuetype IfOptType oftype text {
+        constraints: [ValidIfOptValues];
+    }
+
+    constraint ValidVerkehrValues oftype AllowlistConstraint {
+        allowlist: ["FV", "RV", "nur DPN"];
+    }
+
+    constraint ValidGeographicCordinates oftype RangeConstraint {
+        lowerBound: -90;
+        upperBound: 90;
+    }
+
+    constraint ValidIfOptValues oftype RegexConstraint {
+        regex: /^[a-zA-Z]{2}:\d+:\d+(?::\d+)?$/;
+    }
 }
+
