@@ -6,7 +6,7 @@ import sqlite3
 class TestDataPipeline(unittest.TestCase):
     def test_data_pipeline(self):
         # Execute the data pipeline script
-        os.system("python your_data_pipeline_script.py")
+        os.system("projectpipeline.py")
 
         # Validate the existence of the output SQLite files
         print("Checking existence of SQLite files...")
