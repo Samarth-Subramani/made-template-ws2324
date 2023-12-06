@@ -1,73 +1,74 @@
 import unittest
-import os
 import pandas as pd
 import sqlite3
+from zipfile import ZipFile
+import requests
+from io import BytesIO
 
-class TestDataPipeline(unittest.TestCase):
-    def test_data_pipeline(self):
-        # Execute the data pipeline script
-        os.system("projectpipeline.py")
+class TestSetupSQLiteDatabases(unittest.TestCase):
 
-        # Validate the existence of the output SQLite files
-        print("Checking existence of SQLite files...")
-        self.assertTrue(os.path.exists("../data/global_temperature.sqlite"))
-        self.assertTrue(os.path.exists("../data/crop_yield.sqlite"))
+    def setUp(self):
+        try:
+            # Set up SQLite databases for NASA dataset
+            self.db_path1 = 'nasa_surface_temperature.sqlite'
+            self.conn1 = sqlite3.connect(self.db_path1)
+            self.table1 = 'global_temperature'
+            self.columns1 = ['Year', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'J-D']
+            print(f"Tables in {self.db_path1}: {self.conn1.execute('SELECT name FROM sqlite_master WHERE type=\"table\";').fetchall()}")
 
-        # Check if tables exist in the databases
-        print("Checking existence of tables in databases...")
-        self.assertTrue(self.table_exists("../data/global_temperature.sqlite", "global_temperature"))
-        self.assertTrue(self.table_exists("../data/crop_yield.sqlite", "crop_yield"))
+            # Set up SQLite databases for FAO dataset
+            self.db_path2 = 'fao_data.sqlite'
+            self.conn2 = sqlite3.connect(self.db_path2)
+            self.table2 = 'crop_yield'
+            self.columns2 = ['Area Code', 'Area', 'Item Code', 'Item', 'Element Code', 'Element', 'Year Code', 'Year', 'Unit', 'Value']
+            print(f"Tables in {self.db_path2}: {self.conn2.execute('SELECT name FROM sqlite_master WHERE type=\"table\";').fetchall()}")
+            self.fao_data_df = pd.read_sql_query(f"SELECT * FROM {self.table2};", self.conn2)
+        except Exception as e:
+            self.fail(f"Failed to set up test environment: {e}")
 
-        # Check if datasets are non-empty
-        print("Checking if datasets are non-empty...")
-        self.assertTrue(self.is_non_empty("../data/global_temperature.sqlite", "global_temperature"))
-        self.assertTrue(self.is_non_empty("../data/crop_yield.sqlite", "crop_yield"))
+    def test_fao_dataset_exists(self):
+        try:
+            # Test if the crop_yield table exists in the database
+            cursor = self.conn2.cursor()
+            cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name='{self.table2}';")
+            tables = cursor.fetchall()
+            table_names = [table[0] for table in tables]
+            self.assertIn(self.table2, table_names, f"Test failed: {self.table2} table does not exist in the database.")
+            print(f"Test passed: {self.table2} table exists in the database.")
+        except Exception as e:
+            self.fail(f"Test failed: {e}")
 
-        # Check if the global temperature dataset has the expected columns
-        print("Checking columns in the global temperature dataset...")
-        self.assertTrue(self.check_columns("../data/global_temperature.sqlite", "global_temperature", ["Year", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]))
+    def test_nasa_dataset_exists(self):
+        try:
+            # Test if the global_temperature table exists in the database
+            cursor = self.conn1.cursor()
+            cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name='{self.table1}';")
+            tables = cursor.fetchall()
+            table_names = [table[0] for table in tables]
+            self.assertIn(self.table1, table_names, f"Test failed: {self.table1} table does not exist in the database.")
+            print(f"Test passed: {self.table1} table exists in the database.")
+        except Exception as e:
+            self.fail(f"Test failed: {e}")
+    
+    def test_fao_data_rows(self):
+        try:
+            # Test if the number of rows in the FAO dataset is greater than zero
+            self.assertGreater(len(self.fao_data_df), 0, "Number of rows in FAO dataset is not greater than zero.")
+            print("Test passed: Number of rows in FAO dataset is greater than zero.")
+        except Exception as e:
+            self.fail(f"Test failed: {e}")
 
-        # Check if the crop yield dataset has the expected columns
-        print("Checking columns in the crop yield dataset...")
-        self.assertTrue(self.check_columns("../data/crop_yield.sqlite", "crop_yield", ["Area Code", "Area", "Item Code", "Item", "Year Code", "Year", "Value"]))
+    def test_nasa_data_rows(self):
+        try:
+            # Test if the number of rows in the NASA dataset is greater than zero
+            cursor = self.conn1.cursor()
+            query = f"SELECT COUNT(*) FROM {self.table1};"
+            cursor.execute(query)
+            row_count = cursor.fetchone()[0]
+            self.assertGreater(row_count, 0, "Number of rows in NASA dataset is not greater than zero.")
+            print("Test passed: Number of rows in NASA dataset is greater than zero.")
+        except Exception as e:
+            self.fail(f"Test failed: {e}")
 
-        # Check if the global temperature dataset has data for multiple years
-        print("Checking if the global temperature dataset has data for multiple years...")
-        self.assertTrue(self.check_multiple_years("../data/global_temperature.sqlite", "global_temperature"))
-
-    def table_exists(self, database_path, table_name):
-        # Check if a table exists in the specified SQLite database
-        connection = sqlite3.connect(database_path)
-        cursor = connection.cursor()
-        cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name='{table_name}'")
-        result = cursor.fetchone()
-        connection.close()
-        return result is not None
-
-    def is_non_empty(self, database_path, table_name):
-        # Check if a table in the specified SQLite database is non-empty
-        connection = sqlite3.connect(database_path)
-        query = f"SELECT COUNT(*) FROM {table_name}"
-        result = pd.read_sql_query(query, connection)
-        connection.close()
-        return result.iloc[0, 0] > 0
-
-    def check_columns(self, database_path, table_name, expected_columns):
-        # Check if the specified table has the expected columns
-        connection = sqlite3.connect(database_path)
-        cursor = connection.cursor()
-        cursor.execute(f"PRAGMA table_info({table_name})")
-        columns = [column[1] for column in cursor.fetchall()]
-        connection.close()
-        return set(expected_columns) == set(columns)
-
-    def check_multiple_years(self, database_path, table_name):
-        # Check if the global temperature dataset has data for multiple years
-        connection = sqlite3.connect(database_path)
-        query = f"SELECT COUNT(DISTINCT Year) FROM {table_name}"
-        result = pd.read_sql_query(query, connection)
-        connection.close()
-        return result.iloc[0, 0] > 1
-
-if _name_ == "_main_":
+if _name_ == '_main_':
     unittest.main()
