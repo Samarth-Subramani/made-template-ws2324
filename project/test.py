@@ -17,7 +17,7 @@ class TestSetupSQLiteDatabases(unittest.TestCase):
             print(f"Tables in {self.db_path1}: {self.conn1.execute('SELECT name FROM sqlite_master WHERE type=\"table\";').fetchall()}")
 
             # Set up SQLite databases for FAO dataset
-            self.db_path2 = 'corp_yeild.sqlite'
+            self.db_path2 = 'corp_yield.sqlite'
             self.conn2 = sqlite3.connect(self.db_path2)
             self.table2 = 'crop_yield'
             self.columns2 = ['Area Code', 'Area', 'Item Code', 'Item', 'Element Code', 'Element', 'Year Code', 'Year', 'Unit', 'Value']
