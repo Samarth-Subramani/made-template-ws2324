@@ -2,11 +2,11 @@ name: Continuous Integration
 
 on:
   push:
-    paths:
-      - project/**
     branches:
       - main
-
+    paths:
+      - project/**
+    
 jobs:
   build:
     runs-on: ubuntu-latest
