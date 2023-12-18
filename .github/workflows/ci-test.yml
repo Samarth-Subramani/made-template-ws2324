@@ -3,9 +3,9 @@ name: Continuous Integration
 on:
   push:
     branches:
-      - main
+    - main
     paths:
-      - project/**
+    - project/**
     
 jobs:
   build:
