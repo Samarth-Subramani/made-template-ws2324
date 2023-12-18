@@ -7,24 +7,31 @@ from io import BytesIO
 
 class TestSetupSQLiteDatabases(unittest.TestCase):
 
-    def setUp(self):
-        try:
-            # Set up SQLite databases for NASA dataset
-            self.db_path1 = 'global_temperature.sqlite'
-            self.conn1 = sqlite3.connect(self.db_path1)
-            self.table1 = 'global_temperature'
-            self.columns1 = ['Year', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'J-D']
-            print(f"Tables in {self.db_path1}: {self.conn1.execute(r'SELECT name FROM sqlite_master WHERE type=\"table\"').fetchall()}")
+   def setUp(self):
+    try:
+        # Set up SQLite databases for NASA dataset
+        self.db_path1 = 'global_temperature.sqlite'
+        self.conn1 = sqlite3.connect(self.db_path1)
+        self.table1 = 'global_temperature'
+        self.columns1 = self.get_table_columns(self.conn1, self.table1)
+        print(f"Columns in {self.table1}: {self.columns1}")
 
-            # Set up SQLite databases for FAO dataset
-            self.db_path2 = 'crop_yield.sqlite'
-            self.conn2 = sqlite3.connect(self.db_path2)
-            self.table2 = 'crop_yield'
-            self.columns2 = ['Area Code', 'Area', 'Item Code', 'Item', 'Element Code', 'Element', 'Year Code', 'Year', 'Unit', 'Value']
-            print(f"Tables in {self.db_path2}: {self.conn2.execute(r'SELECT name FROM sqlite_master WHERE type=\"table\"').fetchall()}")
-            self.fao_data_df = pd.read_sql_query(f"SELECT * FROM {self.table2};", self.conn2)
-        except Exception as e:
-            self.fail(f"Failed to set up test environment: {e}")
+        # Set up SQLite databases for FAO dataset
+        self.db_path2 = 'crop_yield.sqlite'
+        self.conn2 = sqlite3.connect(self.db_path2)
+        self.table2 = 'crop_yield'
+        self.columns2 = self.get_table_columns(self.conn2, self.table2)
+        print(f"Columns in {self.table2}: {self.columns2}")
+
+        self.fao_data_df = pd.read_sql_query(f"SELECT * FROM {self.table2};", self.conn2)
+    except Exception as e:
+        self.fail(f"Failed to set up test environment: {e}")
+
+    def get_table_columns(self, connection, table_name):
+        cursor = connection.cursor()
+        cursor.execute(f"PRAGMA table_info({table_name})")
+        columns = [column[1] for column in cursor.fetchall()]
+        return columns
 
     def test_fao_dataset_exists(self):
         try:
