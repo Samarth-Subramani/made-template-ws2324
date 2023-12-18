@@ -14,14 +14,14 @@ class TestSetupSQLiteDatabases(unittest.TestCase):
             self.conn1 = sqlite3.connect(self.db_path1)
             self.table1 = 'global_temperature'
             self.columns1 = ['Year', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'J-D']
-            print(f"Tables in {self.db_path1}: {self.conn1.execute(r'SELECT name FROM sqlite_master WHERE type="table"').fetchall()}")
+            print(f"Tables in {self.db_path1}: {self.conn1.execute(r'SELECT name FROM sqlite_master WHERE type=\"table\"').fetchall()}")
 
             # Set up SQLite databases for FAO dataset
-            self.db_path2 = 'corp_yield.sqlite'
+            self.db_path2 = 'crop_yield.sqlite'
             self.conn2 = sqlite3.connect(self.db_path2)
             self.table2 = 'crop_yield'
             self.columns2 = ['Area Code', 'Area', 'Item Code', 'Item', 'Element Code', 'Element', 'Year Code', 'Year', 'Unit', 'Value']
-            print(f"Tables in {self.db_path2}: {self.conn2.execute(r'SELECT name FROM sqlite_master WHERE type="table"').fetchall()}")
+            print(f"Tables in {self.db_path2}: {self.conn2.execute(r'SELECT name FROM sqlite_master WHERE type=\"table\"').fetchall()}")
             self.fao_data_df = pd.read_sql_query(f"SELECT * FROM {self.table2};", self.conn2)
         except Exception as e:
             self.fail(f"Failed to set up test environment: {e}")
@@ -70,5 +70,5 @@ class TestSetupSQLiteDatabases(unittest.TestCase):
         except Exception as e:
             self.fail(f"Test failed: {e}")
 
-if _name_ == '_main_':
+if __name__ == '__main__':
     unittest.main()
