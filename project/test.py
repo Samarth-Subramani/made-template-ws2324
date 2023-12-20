@@ -7,7 +7,7 @@ class TestSetupSQLiteDatabases(unittest.TestCase):
 
    def setUp(self):
     try:
-        # Set up SQLite databases for NASA dataset
+        # Set up SQLite databases for NASA datasets
         self.db_path1 = 'global_temperature.sqlite'
         self.conn1 = sqlite3.connect(self.db_path1)
         self.table1 = 'global_temperature'
