@@ -1,6 +1,7 @@
 import pandas as pd
 from zipfile import ZipFile
 import requests
+from io import BytesIO
 import sqlite3
 
 # Function to download and preprocess NASA GISS dataset
