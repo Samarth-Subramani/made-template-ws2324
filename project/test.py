@@ -1,9 +1,7 @@
 import unittest
 import pandas as pd
 import sqlite3
-from zipfile import ZipFile
 import requests
-from io import BytesIO
 
 class TestSetupSQLiteDatabases(unittest.TestCase):
 
