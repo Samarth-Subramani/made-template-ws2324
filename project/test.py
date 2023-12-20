@@ -1,28 +1,39 @@
 import unittest
 import pandas as pd
 import sqlite3
+import os
 
 class TestSetupSQLiteDatabases(unittest.TestCase):
 
     def setUp(self):
         try:
             # Set up SQLite databases for NASA datasets
-            self.db_path1 = 'global_temperature.sqlite'
+            self.db_path1 = '../data/global_temperature.sqlite'
             self.conn1 = sqlite3.connect(self.db_path1)
             self.table1 = 'global_temperature'
             self.columns1 = self.get_table_columns(self.conn1, self.table1)
             print(f"Columns in {self.table1}: {self.columns1}")
 
             # Set up SQLite databases for FAO dataset
-            self.db_path2 = 'crop_yield.sqlite'
+            self.db_path2 = '../data/crop_yield.sqlite'
             self.conn2 = sqlite3.connect(self.db_path2)
             self.table2 = 'crop_yield'
+
+            # Check if the table exists before querying
+            if self.table2 not in self.get_table_names(self.conn2):
+                raise AssertionError(f"The table {self.table2} does not exist in the database.")
+
             self.columns2 = self.get_table_columns(self.conn2, self.table2)
             print(f"Columns in {self.table2}: {self.columns2}")
 
             self.fao_data_df = pd.read_sql_query(f"SELECT * FROM {self.table2};", self.conn2)
         except Exception as e:
             self.fail(f"Failed to set up test environment: {e}")
+
+    def get_table_names(self, connection):
+        cursor = connection.cursor()
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
+        return [table[0] for table in cursor.fetchall()]
 
     def get_table_columns(self, connection, table_name):
         cursor = connection.cursor()
@@ -53,7 +64,7 @@ class TestSetupSQLiteDatabases(unittest.TestCase):
             print(f"Test passed: {self.table1} table exists in the database.")
         except Exception as e:
             self.fail(f"Test failed: {e}")
-    
+
     def test_fao_data_rows(self):
         try:
             # Test if the number of rows in the FAO dataset is greater than zero
@@ -73,11 +84,6 @@ class TestSetupSQLiteDatabases(unittest.TestCase):
             print("Test passed: Number of rows in NASA dataset is greater than zero.")
         except Exception as e:
             self.fail(f"Test failed: {e}")
-
-    def tearDown(self):
-        # Clean up resources, if needed
-        self.conn1.close()
-        self.conn2.close()
 
 if __name__ == '__main__':
     unittest.main()
