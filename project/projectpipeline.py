@@ -4,6 +4,7 @@ import requests
 from io import BytesIO
 import sqlite3
 
+
 # Function to download and preprocess NASA GISS dataset
 nasa_giss_url = "https://data.giss.nasa.gov/gistemp/tabledata_v4/GLB.Ts+dSST.csv"
 nasa_data = pd.read_csv(nasa_giss_url, skiprows=1)
