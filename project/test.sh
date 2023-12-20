@@ -1,7 +1,6 @@
 #!/bin/bash
 
 # Install Python packages
-pip install io
 pip install requests 
 pip install zipfile
 pip install pandas
