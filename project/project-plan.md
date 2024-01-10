@@ -5,7 +5,7 @@ Climate Change Impact on Agriculture
 
 ## Main Question
 
-Explore the correlation between temperature variations (from NASA GISS) and agricultural productivity (FAO data). Build a model to predict the impact of temperature changes on crop yields.
+Explore the correlation between temperature variations (from NASA GISS) and agricultural productivity (FAO data). 
 
 ## Description
 
@@ -32,6 +32,5 @@ The FAO provides extensive data on agricultural production, including crop yield
 1. Data preprocessing
 2. Data Exploration and Visualization
 3. Correlation Analysis
-4. Model Evaluation
-5. Report and Documentation 
+4. Report and Documentation 
    
