@@ -9,11 +9,11 @@ The project commences with the acquisition and preprocessing of NASA GISS and FA
 The visualization stage employs various plotting techniques to make sense of the data. Time series plots showcase the annual mean temperature variations and crop yields over the years. Scatter plots and regression analyses offer insights into the correlation between temperature and crop yield. Heatmaps are utilized to visualize the correlation matrix, providing a comprehensive overview of the relationships between different variables.
 
 ## Results
-Through the visualizations, the project aims to uncover trends and patterns that highlight how changes in temperature may impact agricultural yields. The interactive plots allow for dynamic exploration, enabling users to select specific crops and observe the correlation trends between temperature and yield for individual crops.
+Through the visualizations, the project aims to uncover trends and patterns that highlight how temperature changes may impact agricultural yields. The interactive plots allow for dynamic exploration, enabling users to select specific crops and observe the correlation trends between temperature and yield for individual crops.
 
 ## Conclusion
 In conclusion, this project offers a nuanced understanding of the intricate relationship between temperature variations and agricultural productivity. By leveraging advanced data analysis and visualization techniques, it provides a platform for stakeholders and researchers to gain insights into potential climate change impacts on global food production. The project's findings contribute to the broader conversation on climate resilience in agriculture and may inform future strategies for sustainable food security.
 
 
 
-The final report can be found here:[MADE Project Report](https://github.com/Samarth-Subramani/made-template-ws2324/blob/main/project/MADE%20Report.ipynb)
+The final report can be found here:[ MADE Project Report](https://github.com/Samarth-Subramani/made-template-ws2324/blob/main/project/MADE%20Report.ipynb)
