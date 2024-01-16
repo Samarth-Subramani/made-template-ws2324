@@ -16,4 +16,4 @@ In conclusion, this project offers a nuanced understanding of the intricate rela
 
 
 
-The final report can be found here:[MADE Project Report]([URL](https://github.com/Samarth-Subramani/made-template-ws2324/blob/main/project/MADE%20Report.ipynb)https://github.com/Samarth-Subramani/made-template-ws2324/blob/main/project/MADE%20Report.ipynb)
+The final report can be found here:[MADE Project Report](https://github.com/Samarth-Subramani/made-template-ws2324/blob/main/project/MADE%20Report.ipynb)
