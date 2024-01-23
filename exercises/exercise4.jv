@@ -53,7 +53,7 @@ pipeline ModifiedMowestaPipeline {
         use: CelsiusToFahrenheit;
     }
 
-    block BatTempCelsiusToFahrenheitTransformer oftype TableTransformer {
+    block BatterieTempCelsiusToFahrenheitTransformer oftype TableTransformer {
         inputColumns: ["Batterietemperatur"];
         outputColumn: "Batterietemperatur";
         use: CelsiusToFahrenheit;
@@ -89,6 +89,6 @@ pipeline ModifiedMowestaPipeline {
         -> RenameBatterieTemperaturCellWriter
         -> TableInterpreter
         -> TempCelsiusToFahrenheitTransformer
-        -> BatTempCelsiusToFahrenheitTransformer
+        -> BatterieTempCelsiusToFahrenheitTransformer
         -> DBLoader;
 }
