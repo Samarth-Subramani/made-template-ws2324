@@ -19,6 +19,10 @@ pipeline ModifiedMowestaPipeline {
     block DataCsvInterpreter oftype CSVInterpreter {
         delimiter: ";";
     }
+
+    block TableColumnDeleter oftype ColumnDeleter {
+        delete: [column L, column M, column N, column O];
+    }
     
     block RenameTemperaturCellWriter oftype CellWriter {
         at: cell E1;
@@ -56,9 +60,9 @@ pipeline ModifiedMowestaPipeline {
     }
 
     transform CelsiusToFahrenheit {
-        from Celsius oftype decimal;
-        to Fahrenheit oftype decimal;
-        Fahrenheit: (Celsius * 9/5) + 32;
+        from celsius oftype decimal;
+        to fahrenheit oftype decimal;
+        fahrenheit: (celsius * 9/5) + 32;
     }
 
     block DBLoader oftype SQLiteLoader {
@@ -80,6 +84,7 @@ pipeline ModifiedMowestaPipeline {
         -> CsvFilePicker
         -> CSVTextFileInterpreter
         -> DataCsvInterpreter
+        -> TableColumnDeleter
         -> RenameTemperaturCellWriter
         -> RenameBatterieTemperaturCellWriter
         -> TableInterpreter
