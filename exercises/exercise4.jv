@@ -1,70 +1,76 @@
-pipeline MowestaDataPipeline {
+pipeline ModifiedMowestaPipeline {
 
-    block MowestaZipExtractor oftype ZipExtractor {
+    block MowestaZipExtractor oftype HttpExtractor {
         url: "https://www.mowesta.com/data/measure/mowesta-dataset-20221107.zip";
-    } 
-    
-    block MowestaArchiveInterpreter oftype ArchiveInterpreter {
+    }
+
+    block ZipInterpreter oftype ArchiveInterpreter {
         archiveType: "zip";
-    } 
-    
-    block MowestaFilePicker oftype FilePicker {
-        path: "data.csv"; 
     }
 
-    block MowestaFileInterpreter oftype TextFileInterpreter{
-
-    }
-     
-    block MowestaCSVInterpreter oftype CSVInterpreter {
-        delimiter: ",";
-    }
-    
-    block MowestaColumnPicker oftype ColumnPicker {
-        keep: ["Geraet", "Hersteller", "Model", "Monat", "Temperatur in °C (DWD)", "Batterietemperatur in °C", "Geraet aktiv"];
+    block CsvFilePicker oftype FilePicker {
+        path: "/data.csv";
     }
 
-    block MowestaColumnRenamer oftype ColumnRenamer {
-        rename: [
-            column: "Temperatur in °C (DWD)", newColumn: "Temperatur" ,
-            column: "Batterietemperatur in °C", newColumn: "Batterietemperatur" 
+    block CSVTextFileInterpreter oftype TextFileInterpreter {
+        encoding: "utf8";
+    }
+
+    block DataCsvInterpreter oftype CSVInterpreter {
+        delimiter: ";";
+    }
+
+    block MowestaTableInterpreter oftype TableInterpreter {
+        header: false;
+        columns: [
+            "Geraet" oftype PosIntegerType,
+            "Hersteller" oftype text,
+            "Model" oftype text,
+            "Monat" oftype integer,
+            "Temperatur" oftype decimal,
+            "Batterietemperatur" oftype decimal,
+            "Geraet aktiv" oftype text,
         ];
     }
 
-    transform MowestaCelsiusToFahrenheit {
-        from celsius oftype decimal;
-        to fahrenheit oftype decimal;
-        fahrenheit: (celsius * 9/5) + 32;
-    } 
-
-    block MowestaTemperatureTransformer oftype TableTransformer {
-        inputColumns: ["Temperatur", "Batterietemperatur"];
-        outputColumns: ["Temperatur", "Batterietemperatur"];
-        use: MowestaCelsiusToFahrenheit;
+    block TempCelsiusToFahrenheitTransformer oftype TableTransformer {
+        inputColumns: ["Temperatur"];
+        outputColumn: "Temperatur";
+        use: CelsiusToFahrenheit;
     }
 
-    constraint MowestaValidGeraetId on decimal:
-        value > 0;
+    block BatTempCelsiusToFahrenheitTransformer oftype TableTransformer {
+        inputColumns: ["Batterietemperatur"];
+        outputColumn: "Batterietemperatur";
+        use: CelsiusToFahrenheit;
+    }
 
-    block MowestaTableValidator oftype DataValidator {
-        constraints: [
-            { column: "Geraet", constraint: MowestaValidGeraetId }
-        ];
-    } 
+    block DataValidation oftype DataValidator {
+        // Add data validation constraints
+    }
 
     block MowestaDBLoader oftype SQLiteLoader {
         table: "temperatures";
-        file: "temperatures.sqlite";
-    } 
+        file: "./temperatures.sqlite";
+    }
 
-   MowestaZipExtractor 
-    -> MowestaArchiveInterpreter
-    -> MowestaFilePicker
-    -> MowestaFileInterpreter
-    -> MowestaCSVInterpreter
-    -> MowestaColumnPicker
-    -> MowestaColumnRenamer
-    -> MowestaTemperatureTransformer
-    -> MowestaTableValidator
-    -> MowestaDBLoader;
+    valuetype PosIntegerType oftype integer {
+        constraints: [PostRange];
+    }
+
+    constraint PostRange oftype RangeConstraint {
+        lowerBound: 1;
+        lowerBoundInclusive: true;
+    }
+
+    MowestaZipExtractor
+        -> ZipInterpreter
+        -> CsvFilePicker
+        -> CSVTextFileInterpreter
+        -> DataCsvInterpreter
+        -> MowestaTableInterpreter
+        -> TempCelsiusToFahrenheitTransformer
+        -> BatTempCelsiusToFahrenheitTransformer
+        -> DataValidation
+        -> MowestaDBLoader
 }
