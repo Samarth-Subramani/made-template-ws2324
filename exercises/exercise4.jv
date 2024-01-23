@@ -1,48 +1,63 @@
-import jayvee
+pipeline MowestaDataPipeline {
+    MowestaDownload -> MowestaUnzip -> MowestaReshape -> MowestaTransform -> MowestaValidate -> MowestaDBLoad -> MowestaCleanup;
 
-# Step 1: Download and unzip data
-zip_url = "https://www.mowesta.com/data/measure/mowesta-dataset-20221107.zip"
-download_path = "mowesta-dataset.zip"
-extracted_path = "mowesta-dataset"
+    block MowestaDownload oftype HttpExtractor {
+        url: "https://www.mowesta.com/data/measure/mowesta-dataset-20221107.zip";
+        dest: "mowesta-dataset.zip";
+    }
 
-# Download ZIP file
-jayvee.download(zip_url, download_path)
+    block MowestaUnzip oftype ArchiveExtractor {
+        source: "mowesta-dataset.zip";
+        dest: "mowesta-dataset";
+    }
 
-# Unzip data
-jayvee.unzip(download_path, extracted_path)
+    block MowestaReshape oftype FileOperation {
+        operation: "reshape";
+        source: "mowesta-dataset/data.csv";
+        dest: "reshaped-data.csv";
+    }
 
-# Step 2: Reshape data
-csv_path = jayvee.path(extracted_path) / "data.csv"
-df = jayvee.read_csv(csv_path)
+    block MowestaTransform oftype TableTransformer {
+        source: "reshaped-data.csv";
+        dest: "transformed-data.csv";
+        transformations: [
+            { column: "Temperatur in °C (DWD)", transform: CelsiusToFahrenheit },
+            { column: "Batterietemperatur in °C", transform: CelsiusToFahrenheit },
+        ];
+    }
 
-# Select specific columns
-selected_columns = ["Geraet", "Hersteller", "Model", "Monat", "Temperatur in °C (DWD)",
-                    "Batterietemperatur in °C", "Geraet aktiv"]
-df = df[selected_columns]
+    block MowestaValidate oftype DataValidator {
+        source: "transformed-data.csv";
+        dest: "validated-data.csv";
+        validation: [ GeraetPositiveInteger ];
+    }
 
-# Rename columns
-df = df.rename(columns={"Temperatur in °C (DWD)": "Temperatur", "Batterietemperatur in °C": "Batterietemperatur"})
+    block MowestaDBLoad oftype SQLiteLoader {
+        source: "validated-data.csv";
+        table: "temperatures";
+        file: "./temperatures.sqlite";
+    }
 
-# Step 3: Transform data
-# Convert temperatures to Fahrenheit
-df["Temperatur"] = (df["Temperatur"] * 9/5) + 32
-df["Batterietemperatur"] = (df["Batterietemperatur"] * 9/5) + 32
+    block MowestaCleanup oftype FileRemover {
+        files: ["mowesta-dataset.zip", "mowesta-dataset", "reshaped-data.csv", "transformed-data.csv", "validated-data.csv"];
+    }
 
-# Step 4: Validate data
-# Assuming "Geraet" should be a positive integer
-df = df[df["Geraet"] > 0]
+    transform CelsiusToFahrenheit {
+        from celsius oftype decimal;
+        to fahrenheit oftype decimal;
+        fahrenheit: (celsius * 9/5) + 32;
+    }
 
-# Step 5: Write data into SQLite database
-db_path = "temperatures.sqlite"
-table_name = "temperatures"
+    validation GeraetPositiveInteger oftype PosIntegerType {
+        column: "Geraet";
+    }
 
-# Use Jayvee to create DataFrame and write to SQLite
-jayvee_df = jayvee.DataFrame(df)
-jayvee_sqlite = jayvee.SQLite(db_path)
+    valuetype PosIntegerType oftype integer {
+        constraints: [ PostRange ];
+    }
 
-# Write DataFrame to SQLite
-jayvee_sqlite.write_table(table_name, jayvee_df, if_exists="replace")
-
-# Clean up: Remove downloaded ZIP file and extracted folder
-jayvee.remove(download_path)
-jayvee.remove(extracted_path)
+    constraint PostRange oftype RangeConstraint {
+        lowerBound: 1;
+        lowerBoundInclusive: true;
+    }
+}
