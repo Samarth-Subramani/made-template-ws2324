@@ -45,10 +45,6 @@ pipeline ModifiedMowestaPipeline {
         use: CelsiusToFahrenheit;
     }
 
-    block DataValidation oftype DataValidator {
-        // Add data validation constraints
-    }
-
     block MowestaDBLoader oftype SQLiteLoader {
         table: "temperatures";
         file: "./temperatures.sqlite";
