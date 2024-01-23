@@ -46,7 +46,7 @@ pipeline ModifiedMowestaPipeline {
     block TempTransformer oftype TableTransformer {
         inputColumns: ["Temperatur"];
         outputColumn: "Temperatur";
-        use: CelsiusToFahrenheitTransformer;
+        use: CelsiusToFahrenheit;
     }
 
     block BatterieTempTransformer oftype TableTransformer {
