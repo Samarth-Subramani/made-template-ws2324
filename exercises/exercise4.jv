@@ -60,9 +60,9 @@ pipeline ModifiedMowestaPipeline {
     }
 
     transform CelsiusToFahrenheit {
-        from celsius oftype decimal;
-        to fahrenheit oftype decimal;
-        fahrenheit: (celsius * 9/5) + 32;
+        from Celsius oftype decimal;
+        to Fahrenheit oftype decimal;
+        Fahrenheit: (Celsius * 1.8) + 32;
     }
 
     block DBLoader oftype SQLiteLoader {
