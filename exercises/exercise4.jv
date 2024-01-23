@@ -26,8 +26,8 @@ pipeline MowestaDataPipeline {
 
     block MowestaColumnRenamer oftype ColumnRenamer {
         rename: [
-            { column: "Temperatur in °C (DWD)", newColumn: "Temperatur" },
-            { column: "Batterietemperatur in °C", newColumn: "Batterietemperatur" }
+            column: "Temperatur in °C (DWD)", newColumn: "Temperatur" ,
+            column: "Batterietemperatur in °C", newColumn: "Batterietemperatur" 
         ];
     }
 
