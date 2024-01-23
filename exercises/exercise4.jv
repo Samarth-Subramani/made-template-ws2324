@@ -48,7 +48,7 @@ pipeline ModifiedMowestaPipeline {
     transform CelsiusToFahrenheit {
         from celsius oftype decimal;
         to fahrenheit oftype decimal;
-        fahrenheit: (celsius * 9/5) + 32;
+        fahrenheit: (celsius * 1.8) + 32;
     }
 
     block DBLoader oftype SQLiteLoader {
@@ -73,5 +73,5 @@ pipeline ModifiedMowestaPipeline {
         -> TableInterpreter
         -> TempCelsiusToFahrenheit
         -> BatterieTempCelsiusToFahrenheit
-        -> DBLoader
+        -> DBLoader;
 }
