@@ -19,6 +19,16 @@ pipeline ModifiedMowestaPipeline {
     block DataCsvInterpreter oftype CSVInterpreter {
         delimiter: ";";
     }
+    
+    block RenameTemperaturCellWriter oftype CellWriter {
+        at: cell E1;
+        write: ["Temperatur"]; 
+    }
+
+    block RenameBatterieTemperaturCellWriter oftype CellWriter {
+        at: cell J1;
+        write: ["Batterietemperatur"]; 
+    }  
 
     block TableInterpreter oftype TableInterpreter {
         header: false;
@@ -33,22 +43,22 @@ pipeline ModifiedMowestaPipeline {
         ];
     }
 
-    block TempCelsiusToFahrenheit oftype TableTransformer {
+    block TempTransformer oftype TableTransformer {
         inputColumns: ["Temperatur"];
         outputColumn: "Temperatur";
-        use: CelsiusToFahrenheit;
+        use: CelsiusToFahrenheitTransformer;
     }
 
-    block BatterieTempCelsiusToFahrenheit oftype TableTransformer {
+    block BatterieTempTransformer oftype TableTransformer {
         inputColumns: ["Batterietemperatur"];
         outputColumn: "Batterietemperatur";
-        use: CelsiusToFahrenheit;
+        use: CelsiusToFahrenheitTransformer;
     }
 
-    transform CelsiusToFahrenheit {
+    transform CelsiusToFahrenheitTransformer {
         from celsius oftype decimal;
         to fahrenheit oftype decimal;
-        fahrenheit: (celsius * 1.8) + 32;
+        fahrenheit: (celsius * 9/5) + 32;
     }
 
     block DBLoader oftype SQLiteLoader {
@@ -58,6 +68,10 @@ pipeline ModifiedMowestaPipeline {
 
     valuetype PosIntegerType oftype integer {
         constraints: [PostRange];
+    }
+
+    valuetype ValidID oftype integer{
+        constraints: [minID];
     }
 
     constraint PostRange oftype RangeConstraint {
@@ -70,8 +84,10 @@ pipeline ModifiedMowestaPipeline {
         -> CsvFilePicker
         -> CSVTextFileInterpreter
         -> DataCsvInterpreter
+        -> RenameTemperatur
+        -> RenameBatterieTemperatur
         -> TableInterpreter
-        -> TempCelsiusToFahrenheit
-        -> BatterieTempCelsiusToFahrenheit
+        -> TempTransformer
+        -> BatterieTempTransformer
         -> DBLoader;
 }
