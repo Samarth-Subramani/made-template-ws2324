@@ -50,7 +50,9 @@ pipeline MowestaPipeline {
         source: "validated-data.csv";
         table: "temperatures";
         file: "./temperatures.sqlite";
+        output: ["./temperatures.sqlite"];
     }
+
 
     block MowestaCleanup oftype FileRemover {
         files: ["mowesta-dataset.zip", "mowesta-dataset", "selected-data.csv", "reshaped-data.csv", "transformed-data.csv", "validated-data.csv"];
