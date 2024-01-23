@@ -52,10 +52,10 @@ pipeline ModifiedMowestaPipeline {
     block BatterieTempTransformer oftype TableTransformer {
         inputColumns: ["Batterietemperatur"];
         outputColumn: "Batterietemperatur";
-        use: CelsiusToFahrenheitTransformer;
+        use: CelsiusToFahrenheit;
     }
 
-    transform CelsiusToFahrenheitTransformer {
+    transform CelsiusToFahrenheit {
         from celsius oftype decimal;
         to fahrenheit oftype decimal;
         fahrenheit: (celsius * 9/5) + 32;
