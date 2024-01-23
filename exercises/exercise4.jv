@@ -1,45 +1,59 @@
-pipeline MowestaDataPipeline {
-    MowestaDownload -> MowestaUnzip -> MowestaReshape -> MowestaTransform -> MowestaValidate -> MowestaDBLoad -> MowestaCleanup;
+pipeline MowestaPipeline {
+    MowestaZipDownloader
+        -> MowestaZipExtractor
+        -> MowestaCsvSelector
+        -> MowestaColumnRenamer
+        -> MowestaTemperatureTransformer
+        -> MowestaDataValidator
+        -> MowestaDBLoader
+        -> MowestaCleanup;
 
-    block MowestaDownload oftype HttpExtractor {
+    block MowestaZipDownloader oftype HttpExtractor {
         url: "https://www.mowesta.com/data/measure/mowesta-dataset-20221107.zip";
         dest: "mowesta-dataset.zip";
     }
 
-    block MowestaUnzip oftype ArchiveExtractor {
+    block MowestaZipExtractor oftype ArchiveExtractor {
         source: "mowesta-dataset.zip";
         dest: "mowesta-dataset";
     }
 
-    block MowestaReshape oftype FileOperation {
-        operation: "reshape";
-        source: "mowesta-dataset/data.csv";
-        dest: "reshaped-data.csv";
+    block MowestaCsvSelector oftype FilePicker {
+        path: "/data.csv";
+        source: "mowesta-dataset";
+        dest: "selected-data.csv";
     }
 
-    block MowestaTransform oftype TableTransformer {
-        source: "reshaped-data.csv";
-        dest: "transformed-data.csv";
-        transformations: [
-            { column: "Temperatur in °C (DWD)", transform: CelsiusToFahrenheit },
-            { column: "Batterietemperatur in °C", transform: CelsiusToFahrenheit },
+    block MowestaColumnRenamer oftype TableColumnRenamer {
+        source: "selected-data.csv";
+        dest: "reshaped-data.csv";
+        mappings: [
+            { from: "Temperatur in °C (DWD)", to: "Temperatur" },
+            { from: "Batterietemperatur in °C", to: "Batterietemperatur" },
         ];
     }
 
-    block MowestaValidate oftype DataValidator {
-        source: "transformed-data.csv";
-        dest: "validated-data.csv";
-        validation: [ GeraetPositiveInteger ];
+    block MowestaTemperatureTransformer oftype TableTransformer {
+        source: "reshaped-data.csv";
+        transformations: [
+            { column: "Temperatur", transform: CelsiusToFahrenheit },
+            { column: "Batterietemperatur", transform: CelsiusToFahrenheit },
+        ];
     }
 
-    block MowestaDBLoad oftype SQLiteLoader {
+    block MowestaDataValidator oftype DataValidator {
+        source: "transformed-data.csv";
+        validations: [ GeraetPositiveInteger ];
+    }
+
+    block MowestaDBLoader oftype SQLiteLoader {
         source: "validated-data.csv";
         table: "temperatures";
         file: "./temperatures.sqlite";
     }
 
     block MowestaCleanup oftype FileRemover {
-        files: ["mowesta-dataset.zip", "mowesta-dataset", "reshaped-data.csv", "transformed-data.csv", "validated-data.csv"];
+        files: ["mowesta-dataset.zip", "mowesta-dataset", "selected-data.csv", "reshaped-data.csv", "transformed-data.csv", "validated-data.csv"];
     }
 
     transform CelsiusToFahrenheit {
