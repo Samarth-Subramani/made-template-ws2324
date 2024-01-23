@@ -1,0 +1,48 @@
+import jayvee
+
+# Step 1: Download and unzip data
+zip_url = "https://www.mowesta.com/data/measure/mowesta-dataset-20221107.zip"
+download_path = "mowesta-dataset.zip"
+extracted_path = "mowesta-dataset"
+
+# Download ZIP file
+jayvee.download(zip_url, download_path)
+
+# Unzip data
+jayvee.unzip(download_path, extracted_path)
+
+# Step 2: Reshape data
+csv_path = jayvee.path(extracted_path) / "data.csv"
+df = jayvee.read_csv(csv_path)
+
+# Select specific columns
+selected_columns = ["Geraet", "Hersteller", "Model", "Monat", "Temperatur in °C (DWD)",
+                    "Batterietemperatur in °C", "Geraet aktiv"]
+df = df[selected_columns]
+
+# Rename columns
+df = df.rename(columns={"Temperatur in °C (DWD)": "Temperatur", "Batterietemperatur in °C": "Batterietemperatur"})
+
+# Step 3: Transform data
+# Convert temperatures to Fahrenheit
+df["Temperatur"] = (df["Temperatur"] * 9/5) + 32
+df["Batterietemperatur"] = (df["Batterietemperatur"] * 9/5) + 32
+
+# Step 4: Validate data
+# Assuming "Geraet" should be a positive integer
+df = df[df["Geraet"] > 0]
+
+# Step 5: Write data into SQLite database
+db_path = "temperatures.sqlite"
+table_name = "temperatures"
+
+# Use Jayvee to create DataFrame and write to SQLite
+jayvee_df = jayvee.DataFrame(df)
+jayvee_sqlite = jayvee.SQLite(db_path)
+
+# Write DataFrame to SQLite
+jayvee_sqlite.write_table(table_name, jayvee_df, if_exists="replace")
+
+# Clean up: Remove downloaded ZIP file and extracted folder
+jayvee.remove(download_path)
+jayvee.remove(extracted_path)
