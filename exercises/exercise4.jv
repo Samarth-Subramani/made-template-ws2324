@@ -21,7 +21,7 @@ pipeline ModifiedMowestaPipeline {
     }
 
     block TableColumnDeleter oftype ColumnDeleter {
-        delete: [column F, column G, column H, column I,column L, column M, column N, column O];
+        delete: [column L, column M, column N, column O];
     }
     
     block RenameTemperaturCellWriter oftype CellWriter {
@@ -84,9 +84,9 @@ pipeline ModifiedMowestaPipeline {
         -> CsvFilePicker
         -> CSVTextFileInterpreter
         -> DataCsvInterpreter
-        -> TableColumnDeleter
         -> RenameTemperaturCellWriter
         -> RenameBatterieTemperaturCellWriter
+        -> TableColumnDeleter
         -> TableInterpreter
         -> TempCelsiusToFahrenheitTransformer
         -> BatterieTempCelsiusToFahrenheitTransformer
