@@ -53,16 +53,16 @@ pipeline ModifiedMowestaPipeline {
         use: CelsiusToFahrenheit;
     }
 
-    block BatterieTempCelsiusToFahrenheitTransformer oftype TableTransformer {
+    block BatTempCelsiusToFahrenheitTransformer oftype TableTransformer {
         inputColumns: ["Batterietemperatur"];
         outputColumn: "Batterietemperatur";
         use: CelsiusToFahrenheit;
     }
 
     transform CelsiusToFahrenheit {
-        from Celsius oftype decimal;
-        to Fahrenheit oftype decimal;
-        Fahrenheit: (Celsius * 1.8) + 32;
+        from celsius oftype decimal;
+        to fahrenheit oftype decimal;
+        fahrenheit: (celsius * 9/5) + 32;
     }
 
     block DBLoader oftype SQLiteLoader {
@@ -89,6 +89,6 @@ pipeline ModifiedMowestaPipeline {
         -> RenameBatterieTemperaturCellWriter
         -> TableInterpreter
         -> TempCelsiusToFahrenheitTransformer
-        -> BatterieTempCelsiusToFahrenheitTransformer
+        -> BatTempCelsiusToFahrenheitTransformer
         -> DBLoader;
 }
