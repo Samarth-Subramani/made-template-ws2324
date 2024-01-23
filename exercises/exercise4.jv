@@ -47,13 +47,13 @@ pipeline ModifiedMowestaPipeline {
         ];
     }
 
-    block TempTransformer oftype TableTransformer {
+    block TempCelsiusToFahrenheitTransformer oftype TableTransformer {
         inputColumns: ["Temperatur"];
         outputColumn: "Temperatur";
         use: CelsiusToFahrenheit;
     }
 
-    block BatterieTempTransformer oftype TableTransformer {
+    block BatterieTempCelsiusToFahrenheitTransformer oftype TableTransformer {
         inputColumns: ["Batterietemperatur"];
         outputColumn: "Batterietemperatur";
         use: CelsiusToFahrenheit;
@@ -88,7 +88,7 @@ pipeline ModifiedMowestaPipeline {
         -> RenameTemperaturCellWriter
         -> RenameBatterieTemperaturCellWriter
         -> TableInterpreter
-        -> TempTransformer
-        -> BatterieTempTransformer
+        -> TempCelsiusToFahrenheitTransformer
+        -> BatterieTempCelsiusToFahrenheitTransformer
         -> DBLoader;
 }
