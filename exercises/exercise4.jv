@@ -20,9 +20,7 @@ pipeline MowestaPipeline {
     }
 
     block CsvFilePicker oftype FilePicker {
-        source: "mowesta-dataset";
         path: "/data.csv";
-        dest: "reshaped-data.csv";
     }
 
     block CSVTextFileInterpreter oftype TextFileInterpreter {
@@ -34,19 +32,14 @@ pipeline MowestaPipeline {
     }
 
     block TableColumnDeleter oftype ColumnDeleter {
-        source: "reshaped-data.csv";
         delete: [column F, column G, column H, column I, column L, column M, column N, column O];
-        dest: "transformed-data.csv";
     }
 
     block FirstRowDeleter oftype RowDeleter {
-        source: "transformed-data.csv";
         delete: [row 1];
-        dest: "validated-data.csv";
     }
 
     block MowestaTableInterpreter oftype TableInterpreter {
-        source: "validated-data.csv";
         header: false;
         columns: [
             "Geraet" oftype PosIntegerType,
@@ -60,19 +53,15 @@ pipeline MowestaPipeline {
     }
 
     block TempCelsiusToFahrenheitTransformer oftype TableTransformer {
-        source: "validated-data.csv";
         inputColumns: ["Temperatur"];
         outputColumn: "Temperatur";
         use: CelsiusToFahrenheit;
-        dest: "transformed-data.csv";
     }
 
     block BatTempCelsiusToFahrenheitTransformer oftype TableTransformer {
-        source: "validated-data.csv";
         inputColumns: ["Batterietemperatur"];
         outputColumn: "Batterietemperatur";
         use: CelsiusToFahrenheit;
-        dest: "transformed-data.csv";
     }
 
     transform CelsiusToFahrenheit {
@@ -82,7 +71,6 @@ pipeline MowestaPipeline {
     }
 
     block MowestaDBLoader oftype SQLiteLoader {
-        source: "validated-data.csv";
         table: "temperatures";
         file: "./temperatures.sqlite";
     }
