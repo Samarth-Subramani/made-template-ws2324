@@ -1,61 +1,68 @@
 pipeline MowestaPipeline {
-    MowestaZipDownloader
-        -> MowestaZipExtractor
-        -> MowestaCsvSelector
-        -> MowestaColumnRenamer
-        -> MowestaTemperatureTransformer
-        -> MowestaDataValidator
-        -> MowestaDBLoader
-        -> MowestaCleanup;
+    MowestaZipExtractor
+        -> ZipInterpreter
+        -> CsvFilePicker
+        -> CSVTextFileInterpreter
+        -> DataCsvInterpreter
+        -> TableColumnDeleter
+        -> FirstRowDeleter
+        -> MowestaTableInterpreter
+        -> TempCelsiusToFahrenheitTransformer
+        -> BatTempCelsiusToFahrenheitTransformer
+        -> MowestaDBLoader;
 
-    block MowestaZipDownloader oftype HttpExtractor {
+    
+    block MowestaZipExtractor oftype HttpExtractor {
         url: "https://www.mowesta.com/data/measure/mowesta-dataset-20221107.zip";
-        dest: "mowesta-dataset.zip";
     }
 
-    block MowestaZipExtractor oftype ArchiveExtractor {
-        source: "mowesta-dataset.zip";
-        dest: "mowesta-dataset";
+    block ZipInterpreter oftype ArchiveInterpreter {
+        archiveType: "zip";
     }
 
-    block MowestaCsvSelector oftype FilePicker {
+    block CsvFilePicker oftype FilePicker {
         path: "/data.csv";
-        source: "mowesta-dataset";
-        dest: "selected-data.csv";
     }
 
-    block MowestaColumnRenamer oftype TableColumnRenamer {
-        source: "selected-data.csv";
-        dest: "reshaped-data.csv";
-        mappings: [
-            { from: "Temperatur in °C (DWD)", to: "Temperatur" },
-            { from: "Batterietemperatur in °C", to: "Batterietemperatur" },
+    block CSVTextFileInterpreter oftype TextFileInterpreter {
+        encoding: "utf8";
+    }
+
+    block DataCsvInterpreter oftype CSVInterpreter {
+        delimiter: ";";
+    }
+
+    block TableColumnDeleter oftype ColumnDeleter {
+        delete: [column F, column G, column H, column I, column L, column M, column N, column O];
+    }
+
+    block FirstRowDeleter oftype RowDeleter {
+        delete: [row 1];
+    }
+
+    block MowestaTableInterpreter oftype TableInterpreter {
+        header: false;
+        columns: [
+            "Geraet" oftype PosIntegerType,
+            "Hersteller" oftype text,
+            "Model" oftype text,
+            "Monat" oftype integer,
+            "Temperatur" oftype decimal,
+            "Batterietemperatur" oftype decimal,
+            "Geraet aktiv" oftype text,
         ];
     }
 
-    block MowestaTemperatureTransformer oftype TableTransformer {
-        source: "reshaped-data.csv";
-        transformations: [
-            { column: "Temperatur", transform: CelsiusToFahrenheit },
-            { column: "Batterietemperatur", transform: CelsiusToFahrenheit },
-        ];
+    block TempCelsiusToFahrenheitTransformer oftype TableTransformer {
+        inputColumns: ["Temperatur"];
+        outputColumn: "Temperatur";
+        use: CelsiusToFahrenheit;
     }
 
-    block MowestaDataValidator oftype DataValidator {
-        source: "transformed-data.csv";
-        validations: [ GeraetPositiveInteger ];
-    }
-
-    block MowestaDBLoader oftype SQLiteLoader {
-        source: "validated-data.csv";
-        table: "temperatures";
-        file: "./temperatures.sqlite";
-        output: ["./temperatures.sqlite"];
-    }
-
-
-    block MowestaCleanup oftype FileRemover {
-        files: ["mowesta-dataset.zip", "mowesta-dataset", "selected-data.csv", "reshaped-data.csv", "transformed-data.csv", "validated-data.csv"];
+    block BatTempCelsiusToFahrenheitTransformer oftype TableTransformer {
+        inputColumns: ["Batterietemperatur"];
+        outputColumn: "Batterietemperatur";
+        use: CelsiusToFahrenheit;
     }
 
     transform CelsiusToFahrenheit {
@@ -64,8 +71,9 @@ pipeline MowestaPipeline {
         fahrenheit: (celsius * 9/5) + 32;
     }
 
-    validation GeraetPositiveInteger oftype PosIntegerType {
-        column: "Geraet";
+    block MowestaDBLoader oftype SQLiteLoader {
+        table: "temperatures";
+        file: "./temperatures.sqlite";
     }
 
     valuetype PosIntegerType oftype integer {
