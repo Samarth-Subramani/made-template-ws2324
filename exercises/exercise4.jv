@@ -1,6 +1,6 @@
 pipeline ModifiedMowestaPipeline {
 
-    block MowestaZipExtractor oftype HttpExtractor {
+    block ZipExtractor oftype HttpExtractor {
         url: "https://www.mowesta.com/data/measure/mowesta-dataset-20221107.zip";
     }
 
@@ -20,7 +20,7 @@ pipeline ModifiedMowestaPipeline {
         delimiter: ";";
     }
 
-    block MowestaTableInterpreter oftype TableInterpreter {
+    block TableInterpreter oftype TableInterpreter {
         header: false;
         columns: [
             "Geraet" oftype PosIntegerType,
@@ -33,19 +33,25 @@ pipeline ModifiedMowestaPipeline {
         ];
     }
 
-    block TempCelsiusToFahrenheitTransformer oftype TableTransformer {
+    block TempCelsiusToFahrenheit oftype TableTransformer {
         inputColumns: ["Temperatur"];
         outputColumn: "Temperatur";
         use: CelsiusToFahrenheit;
     }
 
-    block BatTempCelsiusToFahrenheitTransformer oftype TableTransformer {
+    block BatterieTempCelsiusToFahrenheit oftype TableTransformer {
         inputColumns: ["Batterietemperatur"];
         outputColumn: "Batterietemperatur";
         use: CelsiusToFahrenheit;
     }
 
-    block MowestaDBLoader oftype SQLiteLoader {
+    transform CelsiusToFahrenheit {
+        from celsius oftype decimal;
+        to fahrenheit oftype decimal;
+        fahrenheit: (celsius * 9/5) + 32;
+    }
+
+    block DBLoader oftype SQLiteLoader {
         table: "temperatures";
         file: "./temperatures.sqlite";
     }
@@ -64,9 +70,8 @@ pipeline ModifiedMowestaPipeline {
         -> CsvFilePicker
         -> CSVTextFileInterpreter
         -> DataCsvInterpreter
-        -> MowestaTableInterpreter
-        -> TempCelsiusToFahrenheitTransformer
-        -> BatTempCelsiusToFahrenheitTransformer
-        -> DataValidation
-        -> MowestaDBLoader
+        -> TableInterpreter
+        -> TempCelsiusToFahrenheit
+        -> BatterieTempCelsiusToFahrenheit
+        -> DBLoader
 }
