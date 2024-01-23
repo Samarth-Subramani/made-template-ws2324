@@ -70,10 +70,6 @@ pipeline ModifiedMowestaPipeline {
         constraints: [PostRange];
     }
 
-    valuetype ValidID oftype integer{
-        constraints: [minID];
-    }
-
     constraint PostRange oftype RangeConstraint {
         lowerBound: 1;
         lowerBoundInclusive: true;
@@ -84,8 +80,8 @@ pipeline ModifiedMowestaPipeline {
         -> CsvFilePicker
         -> CSVTextFileInterpreter
         -> DataCsvInterpreter
-        -> RenameTemperatur
-        -> RenameBatterieTemperatur
+        -> RenameTemperaturCellWriter
+        -> RenameBatterieTemperaturCellWriter
         -> TableInterpreter
         -> TempTransformer
         -> BatterieTempTransformer
