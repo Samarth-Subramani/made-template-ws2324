@@ -16,8 +16,8 @@ stops_file = os.path.join("GTFS_data", "stops.txt")
 
 # Step 3: Data Processing
 # Filter based on specified criteria
-filtered_stops_df = pd.read_csv(stops_file, encoding="utf-8", dtype={"stop_id": str, "stop_name": str, "stop_lat": float, "stop_lon": float, "zone_id": str})
-filtered_stops_df = stops_df[['stop_id', 'stop_name', 'stop_lat', 'stop_lon', 'zone_id']]
+stops_df = pd.read_csv(stops_file, encoding="utf-8", dtype={"stop_id": str, "stop_name": str, "stop_lat": float, "stop_lon": float, "zone_id": str})
+stops_df = stops_df[['stop_id', 'stop_name', 'stop_lat', 'stop_lon', 'zone_id']]
 
 # Check Shape and Types
 print("Shape:", stops_df.shape)  # Check the number of rows and columns
