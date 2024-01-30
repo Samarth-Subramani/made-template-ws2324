@@ -12,7 +12,7 @@ with zipfile.ZipFile(zip_file_path, "r") as zip_ref:
     zip_ref.extractall("GTFS_data")
 
 # Step 3: Read and filter stops.txt
-stops_df = pd.read_csv("GTFS_data/stops.txt", dtype={"stop_id": "TEXT", "stop_name": "TEXT", "stop_lat": "FLOAT", "stop_lon": "FLOAT", "zone_id": "TEXT"})
+stops_df = pd.read_csv("GTFS_data/stops.txt", dtype={"stop_id": str, "stop_name": str, "stop_lat": float, "stop_lon": float, "zone_id": str})
 
 filtered_stops_df = stops_df[(stops_df["zone_id"] == "2001") & 
                              (stops_df["stop_lat"].between(-90, 90, inclusive=True)) & 
