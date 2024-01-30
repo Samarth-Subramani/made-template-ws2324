@@ -15,7 +15,7 @@ with zipfile.ZipFile(gtfs_zip_file, 'r') as zip_ref:
 stops_file = os.path.join("GTFS_data", "stops.txt")
 
 # Step 3: Data Processing
-stops_df = pd.read_csv(stops_file, encoding="utf-8")
+stops_df = pd.read_csv(stops_file)
 stops_df = stops_df[['stop_id', 'stop_name', 'stop_lat', 'stop_lon', 'zone_id']]
 # Check Shape and Types
 print("Shape:", stops_df.shape)  # Check the number of rows and columns
@@ -24,8 +24,8 @@ print("Types:", stops_df.dtypes)  # Check data types of each column
 # Filter based on specified criteria
 filtered_stops_df = stops_df[
     (stops_df["zone_id"] == '2001') &
-    (stops_df["stop_lat"].between(-90, 90, inclusive='both')) &
-    (stops_df["stop_lon"].between(-90, 90, inclusive='both'))
+    (stops_df["stop_lat"].between(-90, 90)) &
+    (stops_df["stop_lon"].between(-90, 90))
 ]
 
 # Check Quality
