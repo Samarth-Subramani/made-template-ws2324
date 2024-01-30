@@ -14,13 +14,19 @@ with zipfile.ZipFile(zip_file_path, "r") as zip_ref:
 # Step 3: Read and filter stops.txt
 stops_df = pd.read_csv("GTFS_data/stops.txt", dtype={"stop_id": str, "stop_name": str, "stop_lat": float, "stop_lon": float, "zone_id": str})
 
-filtered_stops_df = stops_df[(stops_df["zone_id"] == "2001") & 
-                             (stops_df["stop_lat"].between(-90, 90, inclusive=True)) & 
-                             (stops_df["stop_lon"].between(-90, 90, inclusive=True))]
+# Filter based on specified criteria
+filtered_stops_df = stops_df[
+    (stops_df["zone_id"] == "2001") &
+    (stops_df["stop_lat"].between(-90, 90, inclusive='both')) &
+    (stops_df["stop_lon"].between(-90, 90, inclusive='both'))
+]
 
 # Step 4: Validate data (no additional validation required based on the provided constraints)
 
-# Step 5: Write data into SQLite database
+# Step 5: Drop rows with missing values
+filtered_stops_df.dropna(inplace=True)
+
+# Step 6: Write data into SQLite database
 conn = sqlite3.connect("gtfs.sqlite")
 filtered_stops_df.to_sql("stops", conn, index=False, if_exists="replace")
 
