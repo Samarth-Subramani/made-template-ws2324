@@ -16,7 +16,7 @@ stops_file = os.path.join("GTFS_data", "stops.txt")
 
 # Step 3: Data Processing
 stops_df = pd.read_csv(stops_file, encoding="utf-8")
-
+stops_df = stops_df[['stop_id', 'stop_name', 'stop_lat', 'stop_lon', 'zone_id']]
 # Check Shape and Types
 print("Shape:", stops_df.shape)  # Check the number of rows and columns
 print("Types:", stops_df.dtypes)  # Check data types of each column
