@@ -23,6 +23,7 @@ print("Types:", stops_df.dtypes)  # Check data types of each column
 
 # Filter based on specified criteria
 filtered_stops_df = stops_df[
+    (stops_df["stop_id", "stop_name", "stop_lat", "stop_lon", "zone_id"]) &
     (stops_df["zone_id"] == '2001') &
     (stops_df["stop_lat"].between(-90, 90, inclusive='both')) &
     (stops_df["stop_lon"].between(-90, 90, inclusive='both'))
@@ -32,14 +33,13 @@ filtered_stops_df = stops_df[
 print("Quality: No. of Empty Values")
 print(filtered_stops_df.isnull().sum())  # Check for empty values
 
-# Convert columns to appropriate data types
-filtered_stops_df["stop_id"] = filtered_stops_df["stop_id"].astype(int)
-filtered_stops_df["stop_name"] = filtered_stops_df["stop_name"].astype(str)
-filtered_stops_df["stop_lat"] = filtered_stops_df["stop_lat"].astype(float)
-filtered_stops_df["stop_lon"] = filtered_stops_df["stop_lon"].astype(float)
-filtered_stops_df["zone_id"] = filtered_stops_df["zone_id"].astype(int)
-
 # Step 4: Write to SQLite Database
 conn = sqlite3.connect('gtfs.sqlite')
-filtered_stops_df.to_sql('stops', conn, if_exists='replace', index=False)
+filtered_stops_df.to_sql('stops', conn, if_exists='replace', index=False, dtype={
+    'stop_id': 'INTEGER',
+    'stop_name': 'TEXT',
+    'stop_lat': 'FLOAT',
+    'stop_lon': 'FLOAT',
+    'zone_id': 'INTEGER'
+})
 conn.close()
