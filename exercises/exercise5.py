@@ -23,7 +23,6 @@ print("Types:", stops_df.dtypes)  # Check data types of each column
 
 # Filter based on specified criteria
 filtered_stops_df = stops_df[
-    (stops_df["stop_id", "stop_name", "stop_lat", "stop_lon", "zone_id"]) &
     (stops_df["zone_id"] == '2001') &
     (stops_df["stop_lat"].between(-90, 90, inclusive='both')) &
     (stops_df["stop_lon"].between(-90, 90, inclusive='both'))
