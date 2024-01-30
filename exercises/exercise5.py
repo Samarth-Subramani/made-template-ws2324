@@ -15,7 +15,7 @@ with zipfile.ZipFile(gtfs_zip_file, 'r') as zip_ref:
 stops_file = os.path.join("GTFS_data", "stops.txt")
 
 # Step 3: Data Processing
-stops_df = pd.read_csv(stops_file, encoding="utf-8")
+stops_df = pd.read_csv(stops_file)
 
 # Check Shape and Types
 print("Shape:", stops_df.shape)  # Check the number of rows and columns
@@ -27,7 +27,7 @@ filtered_stops_df = stops_df[
     (stops_df["zone_id"] == '2001') &
     (stops_df["stop_lat"].between(-90, 90, inclusive='both')) &
     (stops_df["stop_lon"].between(-90, 90, inclusive='both'))
-].copy()
+]
 
 # Check Quality
 print("Quality: No. of Empty Values")
@@ -36,10 +36,10 @@ print(filtered_stops_df.isnull().sum())  # Check for empty values
 # Step 4: Write to SQLite Database
 conn = sqlite3.connect('gtfs.sqlite')
 filtered_stops_df.to_sql('stops', conn, if_exists='replace', index=False, dtype={
-    'stop_id': 'INTEGER',
+    'stop_id': 'BIGINT',
     'stop_name': 'TEXT',
     'stop_lat': 'FLOAT',
     'stop_lon': 'FLOAT',
-    'zone_id': 'INTEGER'
+    'zone_id': 'BIGINT'
 })
 conn.close()
